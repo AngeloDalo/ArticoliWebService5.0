@@ -14,5 +14,11 @@ namespace ArticoliWebService.Dtos
         public Int16? PzCart { get; set; }
         public double? PesoNetto { get; set; }
         public DateTime? DataCreazione { get; set; }
+        public ICollection<BarcodeDto> Ean { get; set; }
+    }
+
+    public class BarcodeDto{
+        public string Barcode { get; set;}
+        public string tipo {get; set;}
     }
 }

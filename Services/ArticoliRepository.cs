@@ -23,19 +23,19 @@ namespace ArticoliWebService.Services
                 .ToListAsync();
         }
 
-        public Articoli SelArticoloByCodice(string Code)
+        public async Task<Articoli> SelArticoloByCodice(string Code)
         {
-            return  this.alphaShopDbContext.Articoli
+            return await this.alphaShopDbContext.Articoli
                 .Where(a => a.CodArt.Equals(Code))
-                .FirstOrDefault();
+                .include(a => a.barcode)
+                .FirstOrDefaultAsync();
         }
-        public Articoli SelArticoloByEan(string Ean)
+        public async Task<Articoli> SelArticoloByEan(string Ean)
         {
-            
-            return  this.alphaShopDbContext.Barcode
+            return await this.alphaShopDbContext.Barcode
                 .Where(b => b.Barcode.Equals(Ean))
                 .Select(a => a.articolo)
-                .FirstOrDefault();       
+                .FirstOrDefaultAsync();       
         }
 
         public bool InsArticoli(Articoli articolo)
@@ -58,9 +58,10 @@ namespace ArticoliWebService.Services
             throw new System.NotImplementedException();
         }
 
-        public Task<bool> ArticoloExists(string Code)
+        public async Task<bool> ArticoloExists(string Code)
         {
-            throw new System.NotImplementedException();
+            return await this.alphaShopDbContext.Articoli
+                .AnyAsync(c => c.CodArt == Code);
         }
     }
 }
