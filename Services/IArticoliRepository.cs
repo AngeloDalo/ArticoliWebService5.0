@@ -6,7 +6,7 @@ namespace ArticoliWebService.Services
 {
     public interface IArticoliRepository
     {
-        ICollection<Articoli> SelArticoliByDescrizione(string Descrizione);
+        Task<ICollection<Articoli>> SelArticoliByDescrizione(string Descrizione);
         Articoli SelArticoloByCodice(string Code);
         Articoli SelArticoloByEan(string Ean);
         bool InsArticoli(Articoli articolo);
