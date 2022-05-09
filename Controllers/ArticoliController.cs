@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ArticoliWebService.Dtos;
+using ArticoliWebService.Models;
 using ArticoliWebService.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,16 +43,7 @@ namespace ArticoliWebService.Controllers
 
             foreach(var articolo in articoli)
             {
-                articoliDto.Add(new ArticoliDto
-                {
-                    CodArt = articolo.CodArt,
-                    Descrizione = articolo.Descrizione,
-                    Um = articolo.Um,
-                    CodStat = articolo.CodStat,
-                    PzCart = articolo.PzCart,
-                    PesoNetto = articolo.PesoNetto,
-                    DataCreazione = articolo.DataCreazione
-                });
+                articoliDto.Add(GetArticoliDto(articolo));
             }
 
             return Ok(articoliDto);
@@ -72,31 +64,7 @@ namespace ArticoliWebService.Controllers
 
             var articolo = await this.articolirepository.SelArticoloByCodice(CodArt);
 
-            var barcodeDto = new List<BarcodeDto>();
-
-            foreach(var ean in articolo.barcode)
-            {
-                barcodeDto.Add(new BarcodeDto
-                {
-                    Barcode = ean.Barcode,
-                    Tipo = ean.IdTipoArt
-                });
-            }
-
-
-            var articoliDto = new ArticoliDto
-            {
-                CodArt = articolo.CodArt,
-                Descrizione = articolo.Descrizione,
-                Um = articolo.Um,
-                CodStat = articolo.CodStat,
-                PzCart = articolo.PzCart,
-                PesoNetto = articolo.PesoNetto,
-                DataCreazione = articolo.DataCreazione,
-                Ean = barcodeDto,
-            };
-
-            return Ok(articoliDto);
+            return Ok(this.GetArticoliDto(articolo));
         }
 
         [HttpGet("cerca/barcode/{Ean}")]
@@ -112,18 +80,42 @@ namespace ArticoliWebService.Controllers
                 return NotFound(string.Format("Non è stato trovato l'articolo con il barcode '{0}'", Ean));
             }
 
+            return Ok(this.GetArticoliDto(articolo));
+        }
+
+        private ArticoliDto GetArticoliDto(Articoli articolo)
+        {
+            //Console.WriteLine(articolo.CodArt);
+            var barcodeDto = new List<BarcodeDto>();
+
+            foreach(var ean in articolo.barcode)
+            {
+                if (ean != null)
+                {
+                    barcodeDto.Add(new BarcodeDto
+                    {
+                        Barcode = ean.Barcode,
+                        Tipo = ean.IdTipoArt
+                    });
+                }
+            }
+
             var articoliDto = new ArticoliDto
             {
                 CodArt = articolo.CodArt,
                 Descrizione = articolo.Descrizione,
-                Um = articolo.Um,
-                CodStat = articolo.CodStat,
+                Um = (articolo.Um != null) ? articolo.Um.Trim() : "",
+                CodStat = (articolo.CodStat != null) ? articolo.CodStat.Trim() : "",
                 PzCart = articolo.PzCart,
                 PesoNetto = articolo.PesoNetto,
-                DataCreazione = articolo.DataCreazione
+                DataCreazione = articolo.DataCreazione,
+                IdStatoArt = articolo.IdStatoArt,
+                Ean = barcodeDto,
+                Iva = new IvaDto(articolo.iva.Descrizione, articolo.iva.Aliquota),
+                Categoria = articolo.famAssort.Descrizione,
             };
 
-            return Ok(articoliDto);
+            return articoliDto;
         }
     }
 }

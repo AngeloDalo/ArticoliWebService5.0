@@ -19,6 +19,9 @@ namespace ArticoliWebService.Services
         {
             return await this.alphaShopDbContext.Articoli
                 .Where(a => a.Descrizione.Contains(Descrizione))
+                    .Include(a => a.barcode)
+                    .Include(a => a.iva)
+                    .Include(a => a.famAssort)
                 .OrderBy(a => a.Descrizione)
                 .ToListAsync();
         }
@@ -27,13 +30,18 @@ namespace ArticoliWebService.Services
         {
             return await this.alphaShopDbContext.Articoli
                 .Where(a => a.CodArt.Equals(Code))
-                .include(a => a.barcode)
+                    .Include(a => a.barcode)
+                    .Include(a => a.iva)
+                    .Include(a => a.famAssort)
                 .FirstOrDefaultAsync();
         }
         public async Task<Articoli> SelArticoloByEan(string Ean)
         {
             return await this.alphaShopDbContext.Barcode
                 .Where(b => b.Barcode.Equals(Ean))
+                    .Include(a => a.articolo.barcode)                                
+                    .Include(a => a.articolo.famAssort)
+                    .Include(a => a.articolo.iva)
                 .Select(a => a.articolo)
                 .FirstOrDefaultAsync();       
         }
