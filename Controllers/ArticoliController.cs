@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ArticoliWebService.Dtos;
 using ArticoliWebService.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,12 +22,39 @@ namespace ArticoliWebService.Controllers
 
         [HttpGet("cerca/descrizione/{filter}")]
         [ProducesResponseType(400)]
-        public IActionResult GetArticoliByDesc(string filter)
+        [ProducesResponseType(404)]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<ArticoliDto>))]
+        public async Task<IActionResult> GetArticoliByDesc(string filter)
         {
-            var articoli = this.articolirepository.SelArticoliByDescrizione(filter);
+            var articoliDto = new List<ArticoliDto>();
 
-            return Ok(articoli);
+            var articoli = await this.articolirepository.SelArticoliByDescrizione(filter);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (articoli.Count == 0)
+            {
+                return NotFound(string.Format("Non è stato trovato alcun articolo con il filtro '{0}'", filter));
+            }
+
+            foreach(var articolo in articoli)
+            {
+                articoliDto.Add(new ArticoliDto
+                {
+                    CodArt = articolo.CodArt,
+                    Descrizione = articolo.Descrizione,
+                    Um = articolo.Um,
+                    CodStat = articolo.CodStat,
+                    PzCart = articolo.PzCart,
+                    PesoNetto = articolo.PesoNetto,
+                    DataCreazione = articolo.DataCreazione
+                });
+            }
+
+            return Ok(articoliDto);
         }
-
     }
 }
